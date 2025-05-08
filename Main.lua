@@ -1,27 +1,3 @@
--- Lock-On Script for Roblox (Press Q to Toggle Mode)
-local userInputService = game:GetService("UserInputService")
-local players = game:GetService("Players")
-local localPlayer = players.LocalPlayer
-local camera = workspace.CurrentCamera
-
--- Configurable Settings (user can change these)
-local Config = {
-    smoothSpeed = 0.15,         -- Camera smoothing speed
-    showHitbox = true,         -- Toggle visibility of hitbox
-    enableKnockCheck = true,   -- Automatically unlock if target is knocked out
-    enableKnifeCheck = true,   -- Prevent lock-on while holding [Knife]
-    alwaysKnifeCheck = true    -- If true, auto-unlock if [Knife] is equipped during lock-on
-}
-
--- Non-configurable state values (runtime only) DONT CHANGE THESE
-local State = {
-    lockOnMode = false,
-    lockOnPlayer = nil,
-    scriptActive = true,
-    queuedLockOn = false,
-    pendingRelockPlayer = nil -- Stores target if lock-on was interrupted by knife
-}
-
 -- Get closest player to mouse
 local function getClosestPlayerToMouse()
     local mousePos = localPlayer:GetMouse().Hit.Position
@@ -87,6 +63,15 @@ local function deactivateScript()
     end
     State.lockOnMode = false
     State.scriptActive = false
+end
+
+-- Send notification when target is knocked out
+local function sendKnockoutNotification(targetName)
+    starterGui:SetCore("SendNotification", {
+        Title = "Knocked",
+        Text = targetName,
+        Duration = 3
+    })
 end
 
 -- Handle Q toggle and End key
@@ -155,6 +140,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
                     local ko = target.BodyEffects:FindFirstChild("K.O")
                     if ko and ko:IsA("BoolValue") and ko.Value == true then
                         setHitboxVisibility(State.lockOnPlayer, false)
+                        sendKnockoutNotification(State.lockOnPlayer.Name)  -- Send notification when knocked
                         State.lockOnPlayer = nil
                         State.lockOnMode = false
                         return
