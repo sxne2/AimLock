@@ -381,7 +381,7 @@ function Aiming.GetClosestTargetPartToCursor(Character)
     return ClosestPart, ClosestPartPosition, ClosestPartOnScreen, ClosestPartMagnitudeFromMouse
 end
 
--- // Silent Aim Function
+-- // Silent Aim Function to handle Target Switching
 function Aiming.GetClosestPlayerToCursor()
     -- // Vars
     local TargetPart = nil
@@ -389,7 +389,12 @@ function Aiming.GetClosestPlayerToCursor()
     local Chance = CalcChance(Aiming.HitChance)
     local ShortestDistance = 1/0
 
-    -- // Chance
+    -- // If sticky aim is active, don’t change target
+    if Aiming.StickyAim then
+        return Aiming.Selected, Aiming.SelectedPart
+    end
+
+    -- // Chance calculation
     if (not Chance) then
         Aiming.Selected = LocalPlayer
         Aiming.SelectedPart = nil
@@ -424,8 +429,10 @@ function Aiming.GetClosestPlayerToCursor()
     end
 
     -- // End
-    Aiming.Selected = ClosestPlayer
-    Aiming.SelectedPart = TargetPart
+    if ClosestPlayer then
+        Aiming.Selected = ClosestPlayer
+        Aiming.SelectedPart = TargetPart
+    end
 end
 
 -- // Heartbeat Function
